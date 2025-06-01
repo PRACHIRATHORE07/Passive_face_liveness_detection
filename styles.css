@@ -1,0 +1,51 @@
+/* Final result and confidence score */
+#final-result {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 32px;
+  font-weight: bold;
+  user-select: none;
+  z-index: 1100;
+}
+
+#final-result.live {
+  color: #4CAF50; /* green */
+}
+
+#final-result.fake {
+  color: #F44336; /* red */
+}
+
+#confidence-score {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  color: #ddd;
+  user-select: none;
+  z-index: 1100;
+}
+.status-row {
+  margin: 8px 0;
+  font-size: 20px;
+}
+
+.prompt {
+  margin-top: 15px;
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+  background: #f0f0f0;
+  padding: 10px;
+  border-radius: 10px;
+  display: inline-block;
+}
+.prompt-box {
+  font-size: 1.25em;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 10px;
+}
