@@ -26,6 +26,7 @@ The frontend displays the live video feed along with prompts and stage-by-stage 
 2. pip install -r requirements.txt
 
 3. Download shape_predictor_68_face_landmarks.dat
+   abstract and add in your project
 
 4. Run the project
 
@@ -37,7 +38,6 @@ python app.py
 ├── templates/
 │   └── index.html      
 ├── static/
-│   └── styles.css 
-|-- shape_predictor_68_face_landmarks.dat      
+│   └── styles.css    
 ├── requirements.txt     
 └── README.md           
