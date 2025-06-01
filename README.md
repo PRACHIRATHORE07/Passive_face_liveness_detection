@@ -1,4 +1,4 @@
-# Passive_face_liveness_detection
+# Basic_face_liveness_detection
 
 ## Overview
 This is a simple web application that performs **face liveness detection** by analyzing a video feed to verify whether the face shown is live or fake. It performs multiple checks such as brightness, background consistency, detecting a single face, blink detection, smile detection, and nod detection.
