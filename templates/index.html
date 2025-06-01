@@ -1,0 +1,172 @@
+<!DOCTYPE html> 
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Face Liveness Detection</title>
+  <style>
+    /* Basic body styling */
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      text-align: center;
+    }
+
+    /* Container for video feed image */
+    #video-container {
+      display: inline-block;
+      position: relative;
+    }
+
+    /* Styling for the video feed image */
+    #video {
+      border: 5px solid #333;
+      border-radius: 10px;
+    }
+
+    /* Styling for the prompt text box */
+    .prompt-box {
+      font-size: 1.25em;
+      font-weight: 600;
+      color: #222;
+      margin: 15px 0 10px 0;
+      min-height: 30px; /* Reserve height to avoid layout shifts */
+    }
+
+    /* Container for status messages below prompt */
+    .status-box {
+      margin-top: 15px;
+      font-size: 1.1em;
+    }
+
+    /* Individual status lines */
+    .check {
+      font-weight: bold;
+      margin: 4px 0;
+    }
+
+    /* Color coding statuses */
+    .pass {
+      color: green;
+    }
+
+    .fail {
+      color: red;
+    }
+
+    .pending {
+      color: gray;
+    }
+
+    /* Styling for final verdict display */
+    .final-result {
+      margin-top: 20px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Main title of the page -->
+  <h1>Face Liveness Detection</h1>
+
+  <!-- Container holding the video feed image from the backend -->
+  <div id="video-container">
+    <!-- Image element showing the video feed streamed from the Flask server -->
+    <img id="video" src="{{ url_for('video_feed') }}">
+  </div>
+
+  <!-- Prompt box to show instructions or prompts to the user -->
+  <div class="prompt-box" id="prompt"></div>
+
+  <!-- Status box to show current checks and their statuses -->
+  <div class="status-box" id="status"></div>
+
+  <!-- Final verdict display box -->
+  <div class="final-result" id="result"></div>
+
+  <script>
+    // Asynchronous function to fetch liveness detection status from server
+    async function updateStatus() {
+      try {
+        // Fetch current status JSON from backend endpoint '/status'
+        const response = await fetch('/status');
+
+        // Throw error if network response is not OK
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        // Parse JSON data received from server
+        const data = await response.json();
+
+        // Get references to DOM elements for prompt, status, and final result
+        const promptBox = document.getElementById('prompt');
+        const container = document.getElementById('status');
+        const resultBox = document.getElementById('result');
+
+        // Mapping of stage keys to friendly stage names for display
+        const stageNames = {
+          brightness: "Brightness",
+          background: "Background",
+          single_face: "Single Face",
+          blink: "Blink",
+          smile: "Smile",
+          nod: "Nod"
+        };
+
+        // Mapping of certain stages to user prompts
+        const prompts = {
+          single_face: "Please ensure only one face is visible",
+          blink: "Please blink your eyes",
+          smile: "Please smile",
+          nod: "Please nod your head"
+        };
+
+        // Display prompt for 'single_face' if its status is 'pending' or 'fail'
+        if (data.stage_results.single_face === 'pending' || data.stage_results.single_face === 'fail') {
+          promptBox.textContent = prompts.single_face;
+        } else {
+          // If 'single_face' check passes, show prompt for next pending stage in order
+          const promptOrder = ['blink', 'smile', 'nod'];
+          let currentStage = null;
+
+          // Loop through promptOrder to find the first stage still pending
+          for (const stage of promptOrder) {
+            if (data.stage_results[stage] === 'pending') {
+              currentStage = stage;
+              break;
+            }
+          }
+
+          // Show prompt for the current pending stage if exists, else clear prompt
+          if (currentStage && prompts[currentStage]) {
+            promptBox.textContent = prompts[currentStage];
+          } else {
+            promptBox.textContent = "";
+          }
+        }
+
+        // Render each stage's result in the status box, applying class for color
+        container.innerHTML = Object.entries(data.stage_results).map(([stage, status]) => {
+          return `<div class="check ${status}">${stageNames[stage]}: ${status.toUpperCase()}</div>`;
+        }).join('');
+
+        // Display the final liveness verdict with color coding based on status
+        resultBox.innerHTML = `Result: <span class="${data.final_verdict === 'LIVE' ? 'pass' : (data.final_verdict === 'FAKE' ? 'fail' : 'pending')}">${data.final_verdict}</span>`;
+
+      } catch (error) {
+        // Log any errors during fetch or processing to the console
+        console.error('Error updating status:', error);
+      }
+    }
+
+    // Set interval to update status every 1 second
+    setInterval(updateStatus, 1000);
+    // Initial call to update status immediately on page load
+    updateStatus();
+  </script>
+</body>
+
+</html>
